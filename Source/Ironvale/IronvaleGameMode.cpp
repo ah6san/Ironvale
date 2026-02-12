@@ -5,13 +5,21 @@
 
 #include "IronvaleGameMode.h"
 #include "Ironvale.h"
+#include "IronvalePlayerController.h"
+#include "IronvaleGameState.h"
+#include "Characters/IronvalePlayerCharacter.h"
+#include "UI/IronvaleHUD.h"
+#include "World/IronvaleTestLevelBuilder.h"
 #include "UObject/ConstructorHelpers.h"
 
 AIronvaleGameMode::AIronvaleGameMode()
 {
-	// Default classes — override in Blueprints for final game
-	// DefaultPawnClass will be set to BP_IronvalePlayerCharacter in editor
-	// PlayerControllerClass will be set to BP_IronvalePlayerController in editor
+	// Set all default classes so the game is playable from C++ alone —
+	// no Blueprint setup required. Override in Blueprints for final game.
+	DefaultPawnClass = AIronvalePlayerCharacter::StaticClass();
+	PlayerControllerClass = AIronvalePlayerController::StaticClass();
+	HUDClass = AIronvaleHUD::StaticClass();
+	GameStateClass = AIronvaleGameState::StaticClass();
 }
 
 void AIronvaleGameMode::InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage)
@@ -24,6 +32,17 @@ void AIronvaleGameMode::StartPlay()
 {
 	Super::StartPlay();
 	UE_LOG(LogIronvale, Log, TEXT("Ironvale game starting play"));
+
+	// Spawn the test level builder to generate a playable environment
+	// This ensures the game is playable even on an empty map
+	if (UWorld* World = GetWorld())
+	{
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+		World->SpawnActor<AIronvaleTestLevelBuilder>(AIronvaleTestLevelBuilder::StaticClass(),
+			FTransform::Identity, SpawnParams);
+		UE_LOG(LogIronvale, Log, TEXT("Test level builder spawned"));
+	}
 }
 
 void AIronvaleGameMode::HandlePlayerDeath(AController* DeadPlayer)

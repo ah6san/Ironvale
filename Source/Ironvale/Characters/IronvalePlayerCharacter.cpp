@@ -10,6 +10,10 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "InputMappingContext.h"
+#include "InputAction.h"
+#include "InputModifiers.h"
+#include "InputTriggers.h"
 #include "Combat/IronvaleCombatComponent.h"
 #include "Combat/IronvaleStaminaComponent.h"
 #include "Combat/IronvaleLockOnComponent.h"
@@ -17,6 +21,14 @@
 #include "Needs/IronvaleEncumbranceComponent.h"
 #include "Immersion/IronvaleInteractionComponent.h"
 #include "Core/IronvaleStatics.h"
+
+// Helper: create a UInputAction with a given value type
+static UInputAction* CreateInputActionHelper(UObject* Outer, const TCHAR* Name, EInputActionValueType ValueType)
+{
+	UInputAction* Action = NewObject<UInputAction>(Outer, Name);
+	Action->ValueType = ValueType;
+	return Action;
+}
 
 AIronvalePlayerCharacter::AIronvalePlayerCharacter()
 {
@@ -43,6 +55,80 @@ AIronvalePlayerCharacter::AIronvalePlayerCharacter()
 		Movement->MaxWalkSpeedCrouched = 200.0f;
 		Movement->bCanWalkOffLedges = true;
 	}
+
+	// =========================================================================
+	// Create Enhanced Input actions and mapping context in C++ so the game
+	// can run without any editor-created Input Action / Mapping Context assets.
+	// =========================================================================
+
+	MoveAction = CreateInputActionHelper(this, TEXT("IA_Move"), EInputActionValueType::Axis2D);
+	LookAction = CreateInputActionHelper(this, TEXT("IA_Look"), EInputActionValueType::Axis2D);
+	JumpAction = CreateInputActionHelper(this, TEXT("IA_Jump"), EInputActionValueType::Boolean);
+	SprintAction = CreateInputActionHelper(this, TEXT("IA_Sprint"), EInputActionValueType::Boolean);
+	AttackAction = CreateInputActionHelper(this, TEXT("IA_Attack"), EInputActionValueType::Boolean);
+	BlockAction = CreateInputActionHelper(this, TEXT("IA_Block"), EInputActionValueType::Boolean);
+	LockOnAction = CreateInputActionHelper(this, TEXT("IA_LockOn"), EInputActionValueType::Boolean);
+	InteractAction = CreateInputActionHelper(this, TEXT("IA_Interact"), EInputActionValueType::Boolean);
+	CombatDirectionAction = CreateInputActionHelper(this, TEXT("IA_CombatDirection"), EInputActionValueType::Axis2D);
+
+	// Build the mapping context with keyboard + mouse bindings
+	DefaultMappingContext = NewObject<UInputMappingContext>(this, TEXT("IMC_Default"));
+
+	// Move: WASD -> Axis2D via Swizzle (W/S = Y, A/D = X)
+	{
+		// W (+Y forward)
+		FEnhancedActionKeyMapping& W = DefaultMappingContext->MapKey(MoveAction, EKeys::W);
+		UInputModifierSwizzleAxis* SwizzleW = NewObject<UInputModifierSwizzleAxis>(DefaultMappingContext);
+		SwizzleW->Order = EInputAxisSwizzle::YXZ;
+		W.Modifiers.Add(SwizzleW);
+
+		// S (-Y backward)
+		FEnhancedActionKeyMapping& S = DefaultMappingContext->MapKey(MoveAction, EKeys::S);
+		UInputModifierSwizzleAxis* SwizzleS = NewObject<UInputModifierSwizzleAxis>(DefaultMappingContext);
+		SwizzleS->Order = EInputAxisSwizzle::YXZ;
+		S.Modifiers.Add(SwizzleS);
+		UInputModifierNegate* NegS = NewObject<UInputModifierNegate>(DefaultMappingContext);
+		S.Modifiers.Add(NegS);
+
+		// A (-X left)
+		FEnhancedActionKeyMapping& A = DefaultMappingContext->MapKey(MoveAction, EKeys::A);
+		UInputModifierNegate* NegA = NewObject<UInputModifierNegate>(DefaultMappingContext);
+		A.Modifiers.Add(NegA);
+
+		// D (+X right)
+		DefaultMappingContext->MapKey(MoveAction, EKeys::D);
+	}
+
+	// Look: Mouse XY (negate Y for correct pitch direction)
+	{
+		FEnhancedActionKeyMapping& MouseLook = DefaultMappingContext->MapKey(LookAction, EKeys::Mouse2D);
+		UInputModifierNegate* NegLook = NewObject<UInputModifierNegate>(DefaultMappingContext);
+		NegLook->bX = false;
+		NegLook->bY = true;
+		NegLook->bZ = false;
+		MouseLook.Modifiers.Add(NegLook);
+	}
+
+	// Jump: Space
+	DefaultMappingContext->MapKey(JumpAction, EKeys::SpaceBar);
+
+	// Sprint: Left Shift
+	DefaultMappingContext->MapKey(SprintAction, EKeys::LeftShift);
+
+	// Attack: Left Mouse Button
+	DefaultMappingContext->MapKey(AttackAction, EKeys::LeftMouseButton);
+
+	// Block: Right Mouse Button
+	DefaultMappingContext->MapKey(BlockAction, EKeys::RightMouseButton);
+
+	// Lock-on: Q
+	DefaultMappingContext->MapKey(LockOnAction, EKeys::Q);
+
+	// Interact: E
+	DefaultMappingContext->MapKey(InteractAction, EKeys::E);
+
+	// Combat direction: Mouse XY (processed separately for directional combat)
+	DefaultMappingContext->MapKey(CombatDirectionAction, EKeys::Mouse2D);
 }
 
 void AIronvalePlayerCharacter::BeginPlay()
