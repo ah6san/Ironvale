@@ -1,0 +1,83 @@
+# =============================================================================
+# Project Ironvale — .gitignore
+# Unreal Engine 5, cross-platform (Windows + macOS)
+# =============================================================================
+
+# --- Unreal Engine generated directories ---
+Binaries/
+DerivedDataCache/
+Intermediate/
+Saved/
+Build/
+
+# --- Platform-specific build artifacts ---
+*.app
+*.exe
+*.dll
+*.dylib
+*.so
+*.pdb
+*.lib
+*.a
+*.exp
+
+# --- Unreal Engine editor/temp files ---
+*.VC.db
+*.VC.opendb
+*.opensdf
+*.sdf
+*.suo
+*.sln
+*.xcworkspace
+*.xcodeproj
+*.code-workspace
+
+# --- Compiled shader cache ---
+*.shaderCache
+*.upipelinecache
+
+# --- Content hot-reload ---
+*.uasset.tmp
+*.umap.tmp
+
+# --- Visual Studio ---
+.vs/
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
+ipch/
+
+# --- Xcode (macOS) ---
+xcuserdata/
+*.xcscheme
+DerivedData/
+
+# --- JetBrains Rider ---
+.idea/
+*.iml
+
+# --- VS Code ---
+.vscode/
+
+# --- macOS system files ---
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+
+# --- Windows system files ---
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# --- Linux ---
+*~
+.nfs*
+
+# --- Misc ---
+*.log
+*.bak
+*.swp
+*.tmp
