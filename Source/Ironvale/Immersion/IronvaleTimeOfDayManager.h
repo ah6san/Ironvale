@@ -16,6 +16,7 @@
 
 #include "CoreMinimal.h"
 #include "Subsystems/WorldSubsystem.h"
+#include "Containers/Ticker.h"
 #include "Core/IronvaleTypes.h"
 #include "IronvaleTimeOfDayManager.generated.h"
 
@@ -177,7 +178,7 @@ protected:
 	TWeakObjectPtr<USkyLightComponent> SkyLight;
 
 	/** Delegate handle for the tick function */
-	FDelegateHandle TickDelegateHandle;
+	FTSTicker::FDelegateHandle TickDelegateHandle;
 
 	// =========================================================================
 	// INTERNAL
