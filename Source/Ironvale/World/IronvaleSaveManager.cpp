@@ -58,7 +58,7 @@ bool UIronvaleSaveSubsystem::SaveToSlot(const FString& SlotName)
 
 	if (const UIronvaleGameInstance* GI = Cast<UIronvaleGameInstance>(GetGameInstance()))
 	{
-		SaveGame->SlotInfo.PlayTimeSeconds = GI->GetPlayTimeSeconds();
+		SaveGame->SlotInfo.PlayTimeSeconds = GI->GetTotalPlayTimeSeconds();
 	}
 
 	const bool bSuccess = UGameplayStatics::SaveGameToSlot(SaveGame, SlotName, UserIndex);
@@ -261,19 +261,22 @@ void UIronvaleSaveSubsystem::GatherPlayerData(UIronvaleSaveGame* SaveGame)
 	if (const UIronvaleInventoryComponent* InvComp = PlayerPawn->FindComponentByClass<UIronvaleInventoryComponent>())
 	{
 		Data.Gold = InvComp->GetGold();
-		Data.InventoryItems = InvComp->ExportItems();
+		Data.InventoryItems = InvComp->ToSaveData();
 	}
 
 	// Equipment
 	if (const UIronvaleEquipmentComponent* EquipComp = PlayerPawn->FindComponentByClass<UIronvaleEquipmentComponent>())
 	{
-		Data.Equipment = EquipComp->ExportEquipment();
+		Data.Equipment = EquipComp->ToSaveData();
 	}
 
 	// Needs
 	if (const UIronvaleNeedsComponent* NeedsComp = PlayerPawn->FindComponentByClass<UIronvaleNeedsComponent>())
 	{
-		Data.Needs = NeedsComp->ExportNeeds();
+		Data.Needs.Hunger = NeedsComp->GetNeedValue(EIronvaleNeedType::Hunger);
+		Data.Needs.Thirst = NeedsComp->GetNeedValue(EIronvaleNeedType::Thirst);
+		Data.Needs.Fatigue = NeedsComp->GetNeedValue(EIronvaleNeedType::Fatigue);
+		Data.Needs.Cleanliness = NeedsComp->GetNeedValue(EIronvaleNeedType::Cleanliness);
 	}
 
 	// Store player location name for slot info
@@ -305,7 +308,7 @@ void UIronvaleSaveSubsystem::GatherWorldData(UIronvaleSaveGame* SaveGame)
 	// Reputation from ReputationSubsystem
 	if (const UIronvaleReputationSubsystem* RepSys = GetGameInstance()->GetSubsystem<UIronvaleReputationSubsystem>())
 	{
-		State.Reputations = RepSys->ExportReputations();
+		State.Reputations = RepSys->GetAllReputations();
 	}
 }
 
@@ -358,31 +361,39 @@ void UIronvaleSaveSubsystem::RestorePlayerData(const UIronvaleSaveGame* SaveGame
 	// Health
 	if (UIronvaleHealthComponent* HealthComp = PlayerPawn->FindComponentByClass<UIronvaleHealthComponent>())
 	{
-		HealthComp->SetHealth(Data.Health, Data.MaxHealth);
+		HealthComp->SetMaxHealth(Data.MaxHealth);
+		HealthComp->SetHealth(Data.Health);
 	}
 
 	// Stamina
 	if (UIronvaleStaminaComponent* StaminaComp = PlayerPawn->FindComponentByClass<UIronvaleStaminaComponent>())
 	{
-		StaminaComp->SetStamina(Data.Stamina, Data.MaxStamina);
+		StaminaComp->SetMaxStamina(Data.MaxStamina);
+		StaminaComp->SetStamina(Data.Stamina);
 	}
 
 	// Inventory
-	if (UIronvaleInventoryComponent* InvComp = PlayerPawn->FindComponentByClass<UIronvaleInventoryComponent>())
+	UIronvaleInventoryComponent* InvComp = PlayerPawn->FindComponentByClass<UIronvaleInventoryComponent>();
+	if (InvComp)
 	{
-		InvComp->ImportItems(Data.InventoryItems, Data.Gold);
+		InvComp->LoadFromSaveData(Data.InventoryItems, nullptr);
+		InvComp->RemoveGold(InvComp->GetGold());
+		InvComp->AddGold(Data.Gold);
 	}
 
 	// Equipment
 	if (UIronvaleEquipmentComponent* EquipComp = PlayerPawn->FindComponentByClass<UIronvaleEquipmentComponent>())
 	{
-		EquipComp->ImportEquipment(Data.Equipment);
+		EquipComp->LoadFromSaveData(Data.Equipment, InvComp);
 	}
 
 	// Needs
 	if (UIronvaleNeedsComponent* NeedsComp = PlayerPawn->FindComponentByClass<UIronvaleNeedsComponent>())
 	{
-		NeedsComp->ImportNeeds(Data.Needs);
+		NeedsComp->SetNeedValue(EIronvaleNeedType::Hunger, Data.Needs.Hunger);
+		NeedsComp->SetNeedValue(EIronvaleNeedType::Thirst, Data.Needs.Thirst);
+		NeedsComp->SetNeedValue(EIronvaleNeedType::Fatigue, Data.Needs.Fatigue);
+		NeedsComp->SetNeedValue(EIronvaleNeedType::Cleanliness, Data.Needs.Cleanliness);
 	}
 }
 
@@ -396,20 +407,20 @@ void UIronvaleSaveSubsystem::RestoreWorldData(const UIronvaleSaveGame* SaveGame)
 	// Game time and weather
 	if (AIronvaleGameState* GS = World->GetGameState<AIronvaleGameState>())
 	{
-		GS->SetGameTime(State.GameTimeHours, State.DayCount);
+		GS->SetGameTimeFromSave(State.GameTimeHours, State.DayCount);
 		GS->SetWeather(State.CurrentWeather);
 	}
 
 	// World flags
 	if (UIronvaleGameInstance* GI = Cast<UIronvaleGameInstance>(GetGameInstance()))
 	{
-		GI->ImportWorldFlags(State.WorldFlags);
+		GI->LoadWorldFlags(State.WorldFlags);
 	}
 
 	// Reputation
 	if (UIronvaleReputationSubsystem* RepSys = GetGameInstance()->GetSubsystem<UIronvaleReputationSubsystem>())
 	{
-		RepSys->ImportReputations(State.Reputations);
+		RepSys->LoadReputations(State.Reputations);
 	}
 }
 
