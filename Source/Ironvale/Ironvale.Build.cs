@@ -23,7 +23,6 @@ public class Ironvale : ModuleRules
 			"GameplayTasks",
 			"AIModule",
 			"NavigationSystem",
-			"UMG",
 			"Slate",
 			"SlateCore",
 			"PhysicsCore"
