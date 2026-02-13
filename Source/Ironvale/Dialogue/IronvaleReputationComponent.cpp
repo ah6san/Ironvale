@@ -65,13 +65,15 @@ void UIronvaleReputationSubsystem::ModifyReputation(FName FactionID, float Delta
 	UE_LOG(LogIronvale, Log, TEXT("Reputation with %s: %.0f -> %.0f (delta %.0f)"),
 		*FactionID.ToString(), OldValue, *Value, Delta);
 
-	// Broadcast change
-	if (UGameInstance* GI = GetGameInstance())
+	// Broadcast change through EventBus
+	if (const UGameInstance* GI = GetGameInstance())
 	{
-		for (UWorld* World : GI->GetWorldContexts() |
-			FWorldContext::GetWorldLambda([](UWorld* W) { return W != nullptr; }))
+		if (const UWorld* World = GI->GetWorld())
 		{
-			// Simplified: broadcast through first valid world
+			if (UIronvaleEventBus* EventBus = World->GetSubsystem<UIronvaleEventBus>())
+			{
+				EventBus->OnReputationChanged.Broadcast(FactionID, OldValue, *Value);
+			}
 		}
 	}
 

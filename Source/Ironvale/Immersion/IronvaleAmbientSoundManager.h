@@ -16,6 +16,7 @@
 
 #include "CoreMinimal.h"
 #include "Subsystems/WorldSubsystem.h"
+#include "Containers/Ticker.h"
 #include "Core/IronvaleTypes.h"
 #include "IronvaleAmbientSoundManager.generated.h"
 
@@ -170,7 +171,7 @@ protected:
 	UAudioComponent* InteriorAudioComponent = nullptr;
 
 	/** Delegate handle for tick */
-	FDelegateHandle TickDelegateHandle;
+	FTSTicker::FDelegateHandle TickDelegateHandle;
 
 	// =========================================================================
 	// CROSSFADE STATE

@@ -19,6 +19,7 @@
 #include "IronvaleCombatTypes.h"
 #include "IronvaleCombatComponent.generated.h"
 
+struct FIronvaleItemData;
 class UIronvaleStaminaComponent;
 class UIronvaleHealthComponent;
 class UIronvaleEquipmentComponent;
@@ -193,4 +194,8 @@ protected:
 
 	/** Get weapon data from equipment component */
 	const FIronvaleItemData* GetEquippedWeaponData() const;
+
+	/** Wrapper for stamina depletion delegate (void()) → ApplyStagger */
+	UFUNCTION()
+	void HandleStaminaDepleted();
 };

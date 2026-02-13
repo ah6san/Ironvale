@@ -32,7 +32,7 @@ void UIronvaleCombatComponent::BeginPlay()
 	// Bind stamina depletion to stagger
 	if (StaminaComp)
 	{
-		StaminaComp->OnStaminaDepleted.AddDynamic(this, &UIronvaleCombatComponent::ApplyStagger);
+		StaminaComp->OnStaminaDepleted.AddDynamic(this, &UIronvaleCombatComponent::HandleStaminaDepleted);
 	}
 }
 
@@ -524,4 +524,9 @@ const FIronvaleItemData* UIronvaleCombatComponent::GetEquippedWeaponData() const
 		}
 	}
 	return nullptr;
+}
+
+void UIronvaleCombatComponent::HandleStaminaDepleted()
+{
+	ApplyStagger(StaggerThreshold);
 }

@@ -15,6 +15,7 @@
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
 #include "IronvaleItemData.h"
+#include "Core/IronvaleSaveTypes.h"
 #include "IronvaleItemInstance.generated.h"
 
 UCLASS(BlueprintType)

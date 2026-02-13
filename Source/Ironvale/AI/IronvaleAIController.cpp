@@ -284,9 +284,10 @@ void AIronvaleAIController::StartBehaviorTreeForPawn(APawn* InPawn)
 	}
 
 	// Initialize blackboard
-	UseBlackboard(BBAsset, Blackboard);
+	UBlackboardComponent* BBComp = nullptr;
+	UseBlackboard(BBAsset, BBComp);
 
-	if (!Blackboard)
+	if (!BBComp)
 	{
 		UE_LOG(LogIronvale, Error, TEXT("[AIController] Failed to initialize blackboard for %s"),
 			*InPawn->GetName());
