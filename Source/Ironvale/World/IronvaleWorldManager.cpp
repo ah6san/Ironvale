@@ -156,7 +156,7 @@ EIronvaleBiome UIronvaleWorldManagerSubsystem::GetCurrentBiome() const
 	{
 		return Data.Biome;
 	}
-	return EIronvaleBiome::Temperate;
+	return EIronvaleBiome::Forest;
 }
 
 bool UIronvaleWorldManagerSubsystem::IsInTown() const

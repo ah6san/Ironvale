@@ -212,7 +212,7 @@ bool UIronvaleEncounterManagerSubsystem::SelectEncounter(
 	if (!GS) return false;
 
 	const EIronvaleTimeOfDay CurrentTime = UIronvaleStatics::HourToTimeOfDay(GS->GetGameTimeHours());
-	const EIronvaleBiome CurrentBiome = EIronvaleBiome::Temperate; // TODO: get from WorldManager
+	const EIronvaleBiome CurrentBiome = EIronvaleBiome::Forest; // TODO: get from WorldManager
 	const int32 PlayerLevel = 1; // TODO: get from player stats
 
 	// Build weighted candidate list

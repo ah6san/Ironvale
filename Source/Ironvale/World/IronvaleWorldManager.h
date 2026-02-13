@@ -10,6 +10,7 @@
 
 #include "CoreMinimal.h"
 #include "Subsystems/WorldSubsystem.h"
+#include "Containers/Ticker.h"
 #include "World/IronvaleRegionDefinition.h"
 #include "IronvaleWorldManager.generated.h"
 
@@ -125,7 +126,7 @@ protected:
 	UPROPERTY()
 	TObjectPtr<UIronvaleEventBus> CachedEventBus = nullptr;
 
-	FDelegateHandle TickDelegateHandle;
+	FTSTicker::FDelegateHandle TickDelegateHandle;
 	FTimerHandle AILODTimerHandle;
 
 	void UpdatePlayerRegion();
