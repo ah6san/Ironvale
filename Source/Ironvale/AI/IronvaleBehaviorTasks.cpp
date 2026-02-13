@@ -14,6 +14,7 @@
 #include "Perception/AISense_Hearing.h"
 #include "NavigationSystem.h"
 #include "AIController.h"
+#include "Navigation/PathFollowingComponent.h"
 #include "GameFramework/Character.h"
 #include "EngineUtils.h"
 
